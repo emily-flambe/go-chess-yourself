@@ -1,0 +1,22 @@
+.piece {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .white {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+  }
+  
+  .black {
+    background-color: black;
+    color: white;
+  }
+  
