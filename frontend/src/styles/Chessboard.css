@@ -19,10 +19,23 @@
 }
 
 .square {
-  flex: 1;
-  display: flex;
+  flex: 1; /* Ensure squares grow equally within their row */
+  position: relative; /* Needed for the dot to position correctly */
+  display: flex; /* For centering piece content within the square */
   justify-content: center;
   align-items: center;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background-color: gray;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* Allow clicks to pass through the dot */
 }
 
 .square.light {
@@ -41,4 +54,16 @@
 .square.target {
   background-color: yellow; /* Highlight target square */
   outline: 2px dashed black; /* Dashed border to indicate confirmation needed */
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background-color: gray;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* Allow clicking the square without obstruction */
 }
