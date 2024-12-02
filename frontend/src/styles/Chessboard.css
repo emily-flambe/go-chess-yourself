@@ -32,3 +32,8 @@
 .square.dark {
   background-color: #444;
 }
+
+.square.selected {
+  background-color: yellow; /* Highlight selected square */
+  outline: 2px solid black; /* Optional: add a border for emphasis */
+}

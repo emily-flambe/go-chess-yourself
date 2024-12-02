@@ -5,7 +5,6 @@ import "../styles/Chessboard.css";
 const Chessboard = ({ chessboard, onChessboardUpdate }) => {
   const [selectedSquare, setSelectedSquare] = useState(null);
 
-  // Handle square clicks
   const handleSquareClick = (row, col) => {
     const clickedPiece = chessboard[row][col];
 
@@ -14,7 +13,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
 
-      // Check if move is valid (for now, just move to any square)
       if (selectedPiece && (row !== selectedRow || col !== selectedCol)) {
         const updatedChessboard = chessboard.map((r, rowIndex) =>
           r.map((c, colIndex) => {
@@ -27,25 +25,24 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
           })
         );
 
-        onChessboardUpdate(updatedChessboard); // Notify parent of the updated board
+        onChessboardUpdate(updatedChessboard);
       }
 
       // Deselect the square
       setSelectedSquare(null);
-    } else if (clickedPiece) {
-      // Select the square containing the clicked piece
+    } else {
+      // Select the clicked square (regardless of whether it has a piece)
       setSelectedSquare([row, col]);
     }
   };
 
-  // Render a single square of the chessboard
   const renderSquare = (row, col) => {
     const isDark = (row + col) % 2 === 1; // Alternate colors
     const piece = chessboard[row][col];
     const isSelected =
       selectedSquare &&
       selectedSquare[0] === row &&
-      selectedSquare[1] === col; // Check if the square is selected
+      selectedSquare[1] === col;
 
     return (
       <div
@@ -60,7 +57,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
     );
   };
 
-  // Render the entire chessboard
   return (
     <div className="chessboard-container">
       <div className="chessboard">
