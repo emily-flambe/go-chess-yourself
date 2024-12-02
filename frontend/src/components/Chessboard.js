@@ -10,12 +10,11 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
     const clickedPiece = chessboard[row][col];
 
     if (selectedSquare && targetSquare) {
-      // Move confirmed: Move the piece
-      const [selectedRow, selectedCol] = selectedSquare;
-      const selectedPiece = chessboard[selectedRow][selectedCol];
-
-      // Ensure the user is clicking the target square
+      // Check if the user is clicking the target square again to confirm the move
       if (row === targetSquare[0] && col === targetSquare[1]) {
+        const [selectedRow, selectedCol] = selectedSquare;
+        const selectedPiece = chessboard[selectedRow][selectedCol];
+
         const updatedChessboard = chessboard.map((r, rowIndex) =>
           r.map((c, colIndex) => {
             if (rowIndex === row && colIndex === col) {
@@ -32,11 +31,11 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
         setSelectedSquare(null);
         setTargetSquare(null);
       } else {
-        // User clicked a different square, cancel target selection
-        setTargetSquare(null);
+        // Update the target square if the user clicks a different square
+        setTargetSquare([row, col]);
       }
     } else if (selectedSquare) {
-      // Target square selection: Set target
+      // Target square selection: Update the target
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
 
