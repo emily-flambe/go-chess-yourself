@@ -9,6 +9,13 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
   const handleSquareClick = (row, col) => {
     const clickedPiece = chessboard[row][col];
 
+    // If the user clicks the starting square, cancel the selection
+    if (selectedSquare && row === selectedSquare[0] && col === selectedSquare[1]) {
+      setSelectedSquare(null);
+      setTargetSquare(null);
+      return; // Exit early
+    }
+
     if (selectedSquare && targetSquare) {
       // Check if the user is clicking the target square again to confirm the move
       if (row === targetSquare[0] && col === targetSquare[1]) {
