@@ -21,20 +21,26 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       if (row === targetSquare[0] && col === targetSquare[1]) {
         const [selectedRow, selectedCol] = selectedSquare;
         const selectedPiece = chessboard[selectedRow][selectedCol];
+        const targetPiece = chessboard[row][col];
 
-        const updatedChessboard = chessboard.map((r, rowIndex) =>
-          r.map((c, colIndex) => {
-            if (rowIndex === row && colIndex === col) {
-              return selectedPiece; // Place the piece in the target square
-            } else if (rowIndex === selectedRow && colIndex === selectedCol) {
-              return null; // Clear the original square
-            }
-            return c; // Leave other squares unchanged
-          })
-        );
+        // Allow capturing only opposing pieces
+        if (!targetPiece || targetPiece.color !== selectedPiece.color) {
+          const updatedChessboard = chessboard.map((r, rowIndex) =>
+            r.map((c, colIndex) => {
+              if (rowIndex === row && colIndex === col) {
+                return selectedPiece; // Place the moving piece
+              } else if (rowIndex === selectedRow && colIndex === selectedCol) {
+                return null; // Clear the original square
+              }
+              return c; // Leave other squares unchanged
+            })
+          );
 
-        // Update chessboard state and reset selection
-        onChessboardUpdate(updatedChessboard);
+          // Update chessboard state and reset selection
+          onChessboardUpdate(updatedChessboard);
+        }
+
+        // Reset selection after move attempt
         setSelectedSquare(null);
         setTargetSquare(null);
       } else {
@@ -46,7 +52,11 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
 
-      // Ensure the user is clicking a different square
+      // Prevent selecting a square with a piece of the same color
+      if (clickedPiece && clickedPiece.color === selectedPiece.color) {
+        return; // Do nothing if the piece is of the same color
+      }
+
       if (selectedPiece && (row !== selectedRow || col !== selectedCol)) {
         setTargetSquare([row, col]);
       }
