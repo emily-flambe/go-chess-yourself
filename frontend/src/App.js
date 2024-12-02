@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Chessboard from "./components/Chessboard";
 
 const App = () => {
-  // Chessboard state: 8x8 grid with a single piece
   const [chessboard, setChessboard] = useState([
     [null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null],
@@ -17,7 +16,7 @@ const App = () => {
   return (
     <div>
       <h1>Chess Game</h1>
-      <Chessboard chessboard={chessboard} />
+      <Chessboard chessboard={chessboard} onChessboardUpdate={setChessboard} />
     </div>
   );
 };
