@@ -14,6 +14,7 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       const selectedPiece = chessboard[selectedRow][selectedCol];
 
       if (selectedPiece && (row !== selectedRow || col !== selectedCol)) {
+        // Update the chessboard state
         const updatedChessboard = chessboard.map((r, rowIndex) =>
           r.map((c, colIndex) => {
             if (rowIndex === row && colIndex === col) {
@@ -25,13 +26,13 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
           })
         );
 
-        onChessboardUpdate(updatedChessboard);
+        onChessboardUpdate(updatedChessboard); // Notify parent of the updated board
       }
 
       // Deselect the square
       setSelectedSquare(null);
-    } else {
-      // Select the clicked square (regardless of whether it has a piece)
+    } else if (clickedPiece) {
+      // Only allow selecting a square with a piece
       setSelectedSquare([row, col]);
     }
   };
