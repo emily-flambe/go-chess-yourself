@@ -3,37 +3,51 @@ import Piece from "./Piece";
 import "../styles/Chessboard.css";
 
 const Chessboard = ({ chessboard, onChessboardUpdate }) => {
-  const [selectedSquare, setSelectedSquare] = useState(null);
+  const [selectedSquare, setSelectedSquare] = useState(null); // Square containing the piece to move
+  const [targetSquare, setTargetSquare] = useState(null); // Target square for the move
 
   const handleSquareClick = (row, col) => {
     const clickedPiece = chessboard[row][col];
 
-    if (selectedSquare) {
-      // A piece is already selected, attempt to move
+    if (selectedSquare && targetSquare) {
+      // Move confirmed: Move the piece
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
 
-      if (selectedPiece && (row !== selectedRow || col !== selectedCol)) {
-        // Update the chessboard state
+      // Ensure the user is clicking the target square
+      if (row === targetSquare[0] && col === targetSquare[1]) {
         const updatedChessboard = chessboard.map((r, rowIndex) =>
           r.map((c, colIndex) => {
             if (rowIndex === row && colIndex === col) {
-              return selectedPiece; // Move the piece here
+              return selectedPiece; // Place the piece in the target square
             } else if (rowIndex === selectedRow && colIndex === selectedCol) {
-              return null; // Clear the original position
+              return null; // Clear the original square
             }
             return c; // Leave other squares unchanged
           })
         );
 
-        onChessboardUpdate(updatedChessboard); // Notify parent of the updated board
+        // Update chessboard state and reset selection
+        onChessboardUpdate(updatedChessboard);
+        setSelectedSquare(null);
+        setTargetSquare(null);
+      } else {
+        // User clicked a different square, cancel target selection
+        setTargetSquare(null);
       }
+    } else if (selectedSquare) {
+      // Target square selection: Set target
+      const [selectedRow, selectedCol] = selectedSquare;
+      const selectedPiece = chessboard[selectedRow][selectedCol];
 
-      // Deselect the square
-      setSelectedSquare(null);
+      // Ensure the user is clicking a different square
+      if (selectedPiece && (row !== selectedRow || col !== selectedCol)) {
+        setTargetSquare([row, col]);
+      }
     } else if (clickedPiece) {
-      // Only allow selecting a square with a piece
+      // Piece selection: Set selected square
       setSelectedSquare([row, col]);
+      setTargetSquare(null); // Clear target square
     }
   };
 
@@ -44,13 +58,17 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       selectedSquare &&
       selectedSquare[0] === row &&
       selectedSquare[1] === col;
+    const isTarget =
+      targetSquare &&
+      targetSquare[0] === row &&
+      targetSquare[1] === col;
 
     return (
       <div
         key={`${row}-${col}`}
         className={`square ${isDark ? "dark" : "light"} ${
           isSelected ? "selected" : ""
-        }`}
+        } ${isTarget ? "target" : ""}`}
         onClick={() => handleSquareClick(row, col)} // Handle square click
       >
         {piece && <Piece type={piece.type} color={piece.color} />}

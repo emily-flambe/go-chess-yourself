@@ -37,3 +37,8 @@
   background-color: yellow; /* Highlight selected square */
   outline: 2px solid black; /* Optional: add a border for emphasis */
 }
+
+.square.target {
+  background-color: yellow; /* Highlight target square */
+  outline: 2px dashed black; /* Dashed border to indicate confirmation needed */
+}
