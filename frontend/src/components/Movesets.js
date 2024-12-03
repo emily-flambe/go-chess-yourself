@@ -5,7 +5,15 @@ export const kingMoves = (row, col, board) => {
       [1, -1], [1, 0], [1, 1],   // Bottom-left, Bottom, Bottom-right
     ];
   
-    return calculateMoves(row, col, directions, board, 1); // Max 1 step in each direction
+    const basicMoves = calculateMoves(row, col, directions, board, 1); // Max 1 step in each direction
+  
+    // Get all threatened squares by opposing pieces
+    const threatenedSquares = getThreatenedSquares(board, board[row][col].color);
+  
+    // Filter out moves that would place the King in a threatened square
+    return basicMoves.filter(([r, c]) => {
+      return !threatenedSquares.some(([tr, tc]) => tr === r && tc === c);
+    });
   };
   
   export const rookMoves = (row, col, board) => {
@@ -72,6 +80,43 @@ export const kingMoves = (row, col, board) => {
     }
   
     return filterMoves(moves, board);
+  };
+  
+  export const getThreatenedSquares = (board, kingColor) => {
+    const threatened = [];
+  
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece && piece.color !== kingColor) {
+          // Add the moves of all opposing pieces to the threatened squares
+          switch (piece.type) {
+            case "King":
+              threatened.push(...kingMoves(row, col, board));
+              break;
+            case "Rook":
+              threatened.push(...rookMoves(row, col, board));
+              break;
+            case "Bishop":
+              threatened.push(...bishopMoves(row, col, board));
+              break;
+            case "Queen":
+              threatened.push(...queenMoves(row, col, board));
+              break;
+            case "Knight":
+              threatened.push(...knightMoves(row, col, board));
+              break;
+            case "Pawn":
+              threatened.push(...pawnMoves(row, col, board, piece.color));
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+  
+    return threatened;
   };
   
   const calculateMoves = (row, col, directions, board, maxSteps = Infinity) => {
