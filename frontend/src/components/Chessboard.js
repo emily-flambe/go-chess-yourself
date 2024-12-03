@@ -3,14 +3,19 @@ import Piece from "./Piece";
 import "../styles/Chessboard.css";
 import { kingMoves, rookMoves, bishopMoves, queenMoves, knightMoves, pawnMoves } from "./Movesets";
 
-const Chessboard = ({ chessboard, onChessboardUpdate }) => {
+const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) => {
   const [selectedSquare, setSelectedSquare] = useState(null); // Square containing the piece to move
   const [validTargets, setValidTargets] = useState([]); // List of valid target squares
   const [targetSquare, setTargetSquare] = useState(null); // Selected target square awaiting confirmation
 
   const handleSquareClick = (row, col) => {
     const clickedPiece = chessboard[row][col];
-
+  
+    // If no piece is selected and the clicked square has a piece, ensure it's the current turn's piece
+    if (!selectedSquare && clickedPiece && clickedPiece.color !== currentTurn) {
+      return;
+    }
+  
     // If the user clicks the starting square, cancel the selection
     if (selectedSquare && row === selectedSquare[0] && col === selectedSquare[1]) {
       setSelectedSquare(null);
@@ -18,12 +23,12 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       setTargetSquare(null);
       return; // Exit early
     }
-
+  
     // If a target square is already selected, confirm the move
     if (targetSquare && row === targetSquare[0] && col === targetSquare[1]) {
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
-
+  
       const updatedChessboard = chessboard.map((r, rowIndex) =>
         r.map((c, colIndex) => {
           if (rowIndex === row && colIndex === col) {
@@ -34,14 +39,14 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
           return c; // Leave other squares unchanged
         })
       );
-
+  
       onChessboardUpdate(updatedChessboard);
       setSelectedSquare(null);
       setValidTargets([]);
       setTargetSquare(null);
       return;
     }
-
+  
     // If a piece is already selected, handle selecting a target square
     if (selectedSquare) {
       if (validTargets.some(([r, c]) => r === row && c === col)) {
@@ -49,7 +54,7 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       }
       return; // Prevent further actions until confirmation
     }
-
+  
     // Select a piece and calculate valid targets
     if (clickedPiece) {
       setSelectedSquare([row, col]);
@@ -57,6 +62,7 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       setTargetSquare(null); // Clear any previously selected target
     }
   };
+  
 
   const calculateValidTargets = (row, col, piece) => {
     let validTargets = [];
@@ -76,8 +82,8 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
       case "Knight":
         validTargets = knightMoves(row, col, chessboard);
         break;
-      case "Pawn":
-        validTargets = pawnMoves(row, col, chessboard, piece.color);
+    case "Pawn":
+        validTargets = pawnMoves(row, col, chessboard, piece.color, lastMove);
         break;
       default:
         break;

@@ -2,14 +2,18 @@ import React from "react";
 import "../styles/Piece.css";
 
 const Piece = ({ type, color }) => {
-  return (
-    <div
-      className={`piece ${color.toLowerCase()}`}
-      title={`${color} ${type}`} // Tooltip for accessibility
-    >
-      {type[0]} {/* Show the first letter of the piece type */}
-    </div>
-  );
-};
-
-export default Piece;
+    // Determine the display character - N is for kNight, otherwise use the first letter
+    const displayLetter = type === "Knight" ? "N" : type[0];
+  
+    return (
+      <div
+        className={`piece ${color.toLowerCase()}`}
+        title={`${color} ${type}`} // Tooltip for accessibility
+      >
+        {displayLetter}
+      </div>
+    );
+  };
+  
+  export default Piece;
+  

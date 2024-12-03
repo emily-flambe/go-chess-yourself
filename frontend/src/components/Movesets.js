@@ -55,15 +55,15 @@ export const kingMoves = (row, col, board) => {
     return filterMoves(moves, board);
   };
   
-  export const pawnMoves = (row, col, board, color) => {
+  export const pawnMoves = (row, col, board, color, lastMove) => {
     const direction = color === "White" ? -1 : 1; // White moves up, Black moves down
     const moves = [];
   
-    // Forward move
+    // Forward move (can move only if the square is empty)
     if (board[row + direction]?.[col] === null) {
       moves.push([row + direction, col]);
   
-      // Double move on first move
+      // Double move on the pawn's first move
       if ((color === "White" && row === 6) || (color === "Black" && row === 1)) {
         if (board[row + 2 * direction]?.[col] === null) {
           moves.push([row + 2 * direction, col]);
@@ -71,16 +71,43 @@ export const kingMoves = (row, col, board) => {
       }
     }
   
-    // Captures
-    if (board[row + direction]?.[col - 1]?.color !== color) {
+    // Diagonal captures (only if the square is occupied by an opposing piece)
+    if (
+      board[row + direction]?.[col - 1] && // Check if there's a piece
+      board[row + direction][col - 1].color !== color // Check if it's the opposing color
+    ) {
       moves.push([row + direction, col - 1]);
     }
-    if (board[row + direction]?.[col + 1]?.color !== color) {
+    if (
+      board[row + direction]?.[col + 1] && // Check if there's a piece
+      board[row + direction][col + 1].color !== color // Check if it's the opposing color
+    ) {
       moves.push([row + direction, col + 1]);
+    }
+  
+    // En Passant Capture
+    if (lastMove) {
+      const { from, to, piece } = lastMove;
+  
+      // Check if the last move was a two-square pawn advance
+      if (
+        piece.type === "Pawn" &&
+        piece.color !== color && // Opponent's pawn
+        Math.abs(from[0] - to[0]) === 2 // Moved two squares
+      ) {
+        const targetRow = color === "White" ? 3 : 4; // Row where en passant is possible
+        const targetCol = to[1]; // The column of the opposing pawn
+  
+        if (row === targetRow && Math.abs(col - targetCol) === 1) {
+          // Add en passant move
+          moves.push([row + direction, targetCol]);
+        }
+      }
     }
   
     return filterMoves(moves, board);
   };
+  
   
   export const getThreatenedSquares = (board, kingColor) => {
     const threatened = [];
