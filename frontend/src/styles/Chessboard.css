@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full viewport height */
+  margin-bottom: 10px; /* Optional: Add space below the chessboard */
 }
 
 .chessboard {

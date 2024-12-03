@@ -36,3 +36,30 @@
     transform: rotate(360deg);
   }
 }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center everything horizontally */
+  margin-top: 20px;
+}
+
+.controls {
+  margin-top: 0px; /* Add some space below the chessboard */
+  display: flex;
+  justify-content: center; /* Center the buttons horizontally */
+  gap: 10px; /* Add spacing between the buttons */
+}
+
+button {
+  padding: 10px 20px; /* Make buttons larger */
+  font-size: 16px; /* Increase button text size */
+  cursor: pointer;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+button:disabled {
+  background-color: lightgray;
+  cursor: not-allowed;
+}
