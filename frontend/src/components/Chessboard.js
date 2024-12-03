@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Piece from "./Piece";
 import "../styles/Chessboard.css";
+import { kingMoves, rookMoves, bishopMoves, queenMoves, knightMoves, pawnMoves } from "./Movesets";
 
 const Chessboard = ({ chessboard, onChessboardUpdate }) => {
   const [selectedSquare, setSelectedSquare] = useState(null); // Square containing the piece to move
@@ -58,44 +59,30 @@ const Chessboard = ({ chessboard, onChessboardUpdate }) => {
   };
 
   const calculateValidTargets = (row, col, piece) => {
-    let possibleMoves = [];
-
-    if (piece.type === "King") {
-      // Possible moves for a King: one square in any direction
-      possibleMoves = [
-        [row - 1, col - 1], // Top-left
-        [row - 1, col],     // Top
-        [row - 1, col + 1], // Top-right
-        [row, col - 1],     // Left
-        [row, col + 1],     // Right
-        [row + 1, col - 1], // Bottom-left
-        [row + 1, col],     // Bottom
-        [row + 1, col + 1], // Bottom-right
-      ];
-    } else if (piece.type === "Rook") {
-      // Possible moves for a Rook: any number of squares along rows or columns
-      for (let r = 0; r < chessboard.length; r++) {
-        if (r !== row) {
-          possibleMoves.push([r, col]);
-        }
-      }
-      for (let c = 0; c < chessboard[row].length; c++) {
-        if (c !== col) {
-          possibleMoves.push([row, c]);
-        }
-      }
+    let validTargets = [];
+    switch (piece.type) {
+      case "King":
+        validTargets = kingMoves(row, col, chessboard);
+        break;
+      case "Rook":
+        validTargets = rookMoves(row, col, chessboard);
+        break;
+      case "Bishop":
+        validTargets = bishopMoves(row, col, chessboard);
+        break;
+      case "Queen":
+        validTargets = queenMoves(row, col, chessboard);
+        break;
+      case "Knight":
+        validTargets = knightMoves(row, col, chessboard);
+        break;
+      case "Pawn":
+        validTargets = pawnMoves(row, col, chessboard, piece.color);
+        break;
+      default:
+        break;
     }
-
-    // Filter moves to keep only valid ones
-    const targets = possibleMoves.filter(([r, c]) => {
-      const isInBounds = r >= 0 && r < chessboard.length && c >= 0 && c < chessboard[r].length;
-      if (!isInBounds) return false;
-
-      const targetPiece = chessboard[r][c];
-      return !targetPiece || targetPiece.color !== piece.color;
-    });
-
-    setValidTargets(targets);
+    setValidTargets(validTargets);
   };
 
   const renderSquare = (row, col) => {

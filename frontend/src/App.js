@@ -10,7 +10,7 @@ const App = () => {
     [null, null, { type: "Rook", color: "White" }, null, null, null, null, null],
     [null, null, null, { type: "King", color: "White" }, null, null, null, null],
     [null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null],
+    [null, null, null, { type: "Bishop", color: "Black" }, null, null, null, null],
     [null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null],
   ];
