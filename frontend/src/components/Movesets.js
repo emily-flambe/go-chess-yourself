@@ -96,18 +96,18 @@ export const kingMoves = (row, col, board) => {
         Math.abs(from[0] - to[0]) === 2 // Moved two squares
       ) {
         const targetRow = color === "White" ? 3 : 4; // Row where en passant is possible
-        const targetCol = to[1]; // The column of the opposing pawn
+        const targetCol = to[1]; // The column of the opponent's pawn
   
         if (row === targetRow && Math.abs(col - targetCol) === 1) {
-          // Add en passant move
+          // Add the en passant move
           moves.push([row + direction, targetCol]);
         }
       }
     }
   
     return filterMoves(moves, board);
-  };
-  
+  };  
+
   
   export const getThreatenedSquares = (board, kingColor) => {
     const threatened = [];

@@ -11,7 +11,7 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
   const handleSquareClick = (row, col) => {
     const clickedPiece = chessboard[row][col];
   
-    // If no piece is selected and the clicked square has a piece, ensure it's the current turn's piece
+    // Ensure only the current player's pieces can be selected
     if (!selectedSquare && clickedPiece && clickedPiece.color !== currentTurn) {
       return;
     }
@@ -21,13 +21,20 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
       setSelectedSquare(null);
       setValidTargets([]);
       setTargetSquare(null);
-      return; // Exit early
+      return;
     }
   
     // If a target square is already selected, confirm the move
     if (targetSquare && row === targetSquare[0] && col === targetSquare[1]) {
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
+  
+      // Check if the move is an en passant capture
+      const isEnPassant =
+        selectedPiece.type === "Pawn" &&
+        Math.abs(selectedRow - row) === 1 &&
+        Math.abs(selectedCol - col) === 1 &&
+        !chessboard[row][col]; // Target square is empty (en passant)
   
       const updatedChessboard = chessboard.map((r, rowIndex) =>
         r.map((c, colIndex) => {
@@ -36,11 +43,26 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
           } else if (rowIndex === selectedRow && colIndex === selectedCol) {
             return null; // Clear the original square
           }
+  
+          // Remove the captured pawn during en passant
+          if (
+            isEnPassant &&
+            rowIndex === selectedRow &&
+            colIndex === col
+          ) {
+            return null;
+          }
+  
           return c; // Leave other squares unchanged
         })
       );
   
-      onChessboardUpdate(updatedChessboard);
+      onChessboardUpdate(updatedChessboard, {
+        from: [selectedRow, selectedCol],
+        to: [row, col],
+        piece: selectedPiece,
+      });
+  
       setSelectedSquare(null);
       setValidTargets([]);
       setTargetSquare(null);
@@ -62,6 +84,7 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
       setTargetSquare(null); // Clear any previously selected target
     }
   };
+  
   
 
   const calculateValidTargets = (row, col, piece) => {
