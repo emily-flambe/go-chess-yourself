@@ -1,47 +1,37 @@
+// Movesets.js
+
 export const kingMoves = (row, col, board) => {
     const directions = [
-      [-1, -1], [-1, 0], [-1, 1], // Top-left, Top, Top-right
-      [0, -1],          [0, 1],   // Left, Right
-      [1, -1], [1, 0], [1, 1],   // Bottom-left, Bottom, Bottom-right
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1],           [0, 1],
+      [1, -1], [1, 0], [1, 1],
     ];
-  
-    const basicMoves = calculateMoves(row, col, directions, board, 1); // Max 1 step in each direction
-  
-    // Get all threatened squares by opposing pieces
-    const threatenedSquares = getThreatenedSquares(board, board[row][col].color);
-  
-    // Filter out moves that would place the King in a threatened square
-    return basicMoves.filter(([r, c]) => {
-      return !threatenedSquares.some(([tr, tc]) => tr === r && tc === c);
-    });
+    return calculateMoves(row, col, directions, board, 1);
   };
   
   export const rookMoves = (row, col, board) => {
     const directions = [
-      [-1, 0], [1, 0],  // Vertical (Up, Down)
-      [0, -1], [0, 1],  // Horizontal (Left, Right)
+      [-1, 0], [1, 0],
+      [0, -1], [0, 1],
     ];
-  
     return calculateMoves(row, col, directions, board);
   };
   
   export const bishopMoves = (row, col, board) => {
     const directions = [
-      [-1, -1], [-1, 1], // Diagonals
+      [-1, -1], [-1, 1],
       [1, -1], [1, 1],
     ];
-  
     return calculateMoves(row, col, directions, board);
   };
   
   export const queenMoves = (row, col, board) => {
     const directions = [
-      [-1, -1], [-1, 0], [-1, 1], // Top-left, Top, Top-right
-      [0, -1],          [0, 1],   // Left, Right
-      [1, -1], [1, 0], [1, 1],   // Bottom-left, Bottom, Bottom-right
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1],            [0, 1],
+      [1, -1], [1, 0], [1, 1],
     ];
-  
-    return calculateMoves(row, col, directions, board); // Unlimited in all directions
+    return calculateMoves(row, col, directions, board);
   };
   
   export const knightMoves = (row, col, board) => {
@@ -51,19 +41,16 @@ export const kingMoves = (row, col, board) => {
       [row + 1, col + 2], [row + 1, col - 2],
       [row - 1, col + 2], [row - 1, col - 2],
     ];
-  
     return filterMoves(moves, board);
   };
   
   export const pawnMoves = (row, col, board, color, lastMove) => {
-    const direction = color === "White" ? -1 : 1; // White moves up, Black moves down
+    const direction = color === "White" ? -1 : 1;
     const moves = [];
   
-    // Forward move (can move only if the square is empty)
+    // Forward moves
     if (board[row + direction]?.[col] === null) {
       moves.push([row + direction, col]);
-  
-      // Double move on the pawn's first move
       if ((color === "White" && row === 6) || (color === "Black" && row === 1)) {
         if (board[row + 2 * direction]?.[col] === null) {
           moves.push([row + 2 * direction, col]);
@@ -71,83 +58,59 @@ export const kingMoves = (row, col, board) => {
       }
     }
   
-    // Diagonal captures (only if the square is occupied by an opposing piece)
-    if (
-      board[row + direction]?.[col - 1] && // Check if there's a piece
-      board[row + direction][col - 1].color !== color // Check if it's the opposing color
-    ) {
+    // Diagonal captures
+    if (board[row + direction]?.[col - 1] && board[row + direction][col - 1].color !== color) {
       moves.push([row + direction, col - 1]);
     }
-    if (
-      board[row + direction]?.[col + 1] && // Check if there's a piece
-      board[row + direction][col + 1].color !== color // Check if it's the opposing color
-    ) {
+    if (board[row + direction]?.[col + 1] && board[row + direction][col + 1].color !== color) {
       moves.push([row + direction, col + 1]);
     }
   
-    // En Passant Capture
-    if (lastMove) {
-      const { from, to, piece } = lastMove;
-  
-      // Check if the last move was a two-square pawn advance
-      if (
-        piece.type === "Pawn" &&
-        piece.color !== color && // Opponent's pawn
-        Math.abs(from[0] - to[0]) === 2 // Moved two squares
-      ) {
-        const targetRow = color === "White" ? 3 : 4; // Row where en passant is possible
-        const targetCol = to[1]; // The column of the opponent's pawn
-  
-        if (row === targetRow && Math.abs(col - targetCol) === 1) {
-          // Add the en passant move
-          moves.push([row + direction, targetCol]);
-        }
-      }
-    }
-  
     return filterMoves(moves, board);
-  };  
-
+  };
   
-  export const getThreatenedSquares = (board, kingColor) => {
+  export const calculateValidTargetsForPiece = (row, col, piece, board) => {
+    switch (piece.type) {
+      case "King":
+        return kingMoves(row, col, board);
+      case "Rook":
+        return rookMoves(row, col, board);
+      case "Bishop":
+        return bishopMoves(row, col, board);
+      case "Queen":
+        return queenMoves(row, col, board);
+      case "Knight":
+        return knightMoves(row, col, board);
+      case "Pawn":
+        return pawnMoves(row, col, board, piece.color, null); // Modify if needed for en passant
+      default:
+        return [];
+    }
+  };
+  
+  // Returns squares with pieces of the opposite color that `attackingColor` can capture.
+  export const getSquaresThreatenedByColor = (board, attackingColor) => {
     const threatened = [];
-  
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = board[row][col];
-        if (piece && piece.color !== kingColor) {
-          // Add the moves of all opposing pieces to the threatened squares
-          switch (piece.type) {
-            case "King":
-              threatened.push(...kingMoves(row, col, board));
-              break;
-            case "Rook":
-              threatened.push(...rookMoves(row, col, board));
-              break;
-            case "Bishop":
-              threatened.push(...bishopMoves(row, col, board));
-              break;
-            case "Queen":
-              threatened.push(...queenMoves(row, col, board));
-              break;
-            case "Knight":
-              threatened.push(...knightMoves(row, col, board));
-              break;
-            case "Pawn":
-              threatened.push(...pawnMoves(row, col, board, piece.color));
-              break;
-            default:
-              break;
-          }
+        if (piece && piece.color === attackingColor) {
+          const moves = calculateValidTargetsForPiece(row, col, piece, board);
+          moves.forEach(([r, c]) => {
+            const targetPiece = board[r][c];
+            if (targetPiece && targetPiece.color !== attackingColor) {
+              threatened.push([r, c]);
+            }
+          });
         }
       }
     }
-  
     return threatened;
   };
   
   const calculateMoves = (row, col, directions, board, maxSteps = Infinity) => {
     const moves = [];
+    const piece = board[row][col];
   
     for (const [dRow, dCol] of directions) {
       let steps = 0;
@@ -157,8 +120,8 @@ export const kingMoves = (row, col, board) => {
       while (steps < maxSteps && r >= 0 && r < 8 && c >= 0 && c < 8) {
         const target = board[r][c];
         if (target) {
-          if (target.color !== board[row][col].color) moves.push([r, c]); // Capture
-          break; // Stop at first piece
+          if (target.color !== piece.color) moves.push([r, c]); // capture
+          break;
         }
         moves.push([r, c]);
         r += dRow;
@@ -170,7 +133,6 @@ export const kingMoves = (row, col, board) => {
     return moves;
   };
   
-  const filterMoves = (moves, board) => {
-    return moves.filter(([r, c]) => r >= 0 && r < 8 && c >= 0 && c < 8);
-  };
+  const filterMoves = (moves, board) =>
+    moves.filter(([r, c]) => r >= 0 && r < 8 && c >= 0 && c < 8);
   
