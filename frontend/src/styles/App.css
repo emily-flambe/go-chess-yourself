@@ -1,3 +1,9 @@
+body {
+  margin: 0;
+  background-color: #c8c5e4; /* Neutral background color */
+  font-family: sans-serif;
+}
+
 .App {
   text-align: center;
 }
@@ -40,20 +46,27 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center everything horizontally */
+  align-items: center;
+  margin-top: 20px;
+  padding: 20px;
+}
+
+
+.chessboard-container {
   margin-top: 20px;
 }
 
+
 .controls {
-  margin-top: 0px; /* Add some space below the chessboard */
+  margin-top: 20px;
   display: flex;
-  justify-content: center; /* Center the buttons horizontally */
-  gap: 10px; /* Add spacing between the buttons */
+  justify-content: center;
+  gap: 10px;
 }
 
 button {
-  padding: 10px 20px; /* Make buttons larger */
-  font-size: 16px; /* Increase button text size */
+  padding: 10px 20px;
+  font-size: 16px;
   cursor: pointer;
   border: 1px solid black;
   border-radius: 5px;
