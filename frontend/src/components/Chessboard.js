@@ -1,30 +1,26 @@
 import React, { useState } from "react";
 import Piece from "./Piece";
 import "../styles/Chessboard.css";
-import { kingMoves, rookMoves, bishopMoves, queenMoves, knightMoves, pawnMoves, getSquaresThreatenedByColor } from "./Movesets";
+import { kingMoves, rookMoves, bishopMoves, queenMoves, knightMoves, pawnMoves, getSquaresThreatenedByColor, calculateValidTargetsForPiece } from "./Movesets";
 
-const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, showThreats, showCaptures }) => {
+const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, showThreats, showCaptures, winner }) => {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [validTargets, setValidTargets] = useState([]);
   const [targetSquare, setTargetSquare] = useState(null);
 
   const opponentColor = currentTurn === "White" ? "Black" : "White";
 
-  // Get squares threatened by current player's pieces (opponent’s pieces at risk)
   const threatenedByCurrentPlayer = getSquaresThreatenedByColor(chessboard, currentTurn);
-
-  // Get squares where current player's pieces are threatened by opponent
   const threatenedByOpponent = getSquaresThreatenedByColor(chessboard, opponentColor);
 
   const handleSquareClick = (row, col) => {
+    if (winner) return; // If there's a winner, no moves allowed
     const clickedPiece = chessboard[row][col];
 
-    // Ensure only current player's pieces can be selected if no piece is currently selected
     if (!selectedSquare && clickedPiece && clickedPiece.color !== currentTurn) {
       return;
     }
 
-    // Deselect if clicking the same square
     if (selectedSquare && row === selectedSquare[0] && col === selectedSquare[1]) {
       setSelectedSquare(null);
       setValidTargets([]);
@@ -32,7 +28,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
       return;
     }
 
-    // If a target square is selected and clicked again, confirm the move
     if (targetSquare && row === targetSquare[0] && col === targetSquare[1]) {
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
@@ -60,7 +55,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
       return;
     }
 
-    // If a piece is already selected, choose a target square
     if (selectedSquare) {
       if (validTargets.some(([r, c]) => r === row && c === col)) {
         setTargetSquare([row, col]);
@@ -68,7 +62,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
       return;
     }
 
-    // Select a piece and calculate valid targets
     if (clickedPiece) {
       setSelectedSquare([row, col]);
       let moves = [];
@@ -96,7 +89,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
           break;
       }
 
-      // Filter moves that keep the King safe
       moves = filterKingSafeMoves(chessboard, [row, col], clickedPiece, moves, currentTurn);
 
       setValidTargets(moves);
@@ -104,14 +96,12 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
     }
   };
 
-  // Filter out moves that would leave the king threatened
   const filterKingSafeMoves = (board, fromPos, piece, moves, playerColor) => {
     return moves.filter(([targetRow, targetCol]) => {
       const simulatedBoard = simulateMove(board, fromPos, [targetRow, targetCol], piece);
       const kingPos = findKingPosition(playerColor, simulatedBoard);
-      if (!kingPos) return false; // no king found, shouldn't happen but just in case
+      if (!kingPos) return false;
 
-      // If after the move, the king's square is threatened by opponent, discard this move
       const opponentColor = playerColor === "White" ? "Black" : "White";
       const squaresThreatenedByOpponent = getSquaresThreatenedByColor(simulatedBoard, opponentColor);
 
@@ -123,34 +113,6 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
     });
   };
 
-  const findKingPosition = (playerColor, board) => {
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const piece = board[r][c];
-        if (piece && piece.type === "King" && piece.color === playerColor) {
-          return { row: r, col: c };
-        }
-      }
-    }
-    return null;
-  };
-
-  const simulateMove = (board, fromPos, toPos, piece) => {
-    const [fromRow, fromCol] = fromPos;
-    const [toRow, toCol] = toPos;
-
-    return board.map((r, rowIndex) =>
-      r.map((cell, colIndex) => {
-        if (rowIndex === toRow && colIndex === toCol) {
-          return piece;
-        } else if (rowIndex === fromRow && colIndex === fromCol) {
-          return null;
-        }
-        return cell;
-      })
-    );
-  };
-
   const renderSquare = (row, col) => {
     const piece = chessboard[row][col];
     const isDark = (row + col) % 2 === 1;
@@ -159,12 +121,10 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
     const isTargetSquare = targetSquare?.[0] === row && targetSquare?.[1] === col;
 
     let highlightClass = "";
-    if (piece) { // Removed the `if (showThreats && piece)` check since we have separate toggles
+    if (piece) {
       const isThreatenedByOpponent = threatenedByOpponent.some(([r, c]) => r === row && c === col);
       const isThreatenedByCurrent = threatenedByCurrentPlayer.some(([r, c]) => r === row && c === col);
-  
-      // Now use showThreats for red highlight (my threatened pieces)
-      // and showCaptures for blue highlight (opponent pieces I threaten)
+
       if (currentTurn === "White") {
         if (isThreatenedByOpponent && piece.color === "White" && showThreats) highlightClass = "threat-red";
         if (isThreatenedByCurrent && piece.color === "Black" && showCaptures) highlightClass = "threat-blue";
@@ -198,5 +158,90 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
     </div>
   );
 };
+
+// Helper functions defined outside the component:
+function findKingPosition(playerColor, board) {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (piece && piece.type === "King" && piece.color === playerColor) {
+        return { row: r, col: c };
+      }
+    }
+  }
+  return null;
+}
+
+function simulateMove(board, fromPos, toPos, piece) {
+  const [fromRow, fromCol] = fromPos;
+  const [toRow, toCol] = toPos;
+
+  return board.map((r, rowIndex) =>
+    r.map((cell, colIndex) => {
+      if (rowIndex === toRow && colIndex === toCol) {
+        return piece;
+      } else if (rowIndex === fromRow && colIndex === fromCol) {
+        return null;
+      }
+      return cell;
+    })
+  );
+}
+
+function generateAllValidMovesForPlayer(playerColor, board) {
+  const allMoves = [];
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = board[row][col];
+      if (piece && piece.color === playerColor) {
+        const moves = calculateValidTargetsForPiece(row, col, piece, board);
+        moves.forEach(([toRow, toCol]) => {
+          allMoves.push({
+            from: { row, col },
+            to: { row: toRow, col: toCol },
+            piece
+          });
+        });
+      }
+    }
+  }
+  return allMoves;
+}
+
+function isCheckmate(playerColor, board) {
+  const opponentColor = playerColor === "White" ? "Black" : "White";
+  const kingPos = findKingPosition(playerColor, board);
+  if (!kingPos) {
+    return true; 
+  }
+
+  const opponentThreats = getSquaresThreatenedByColor(board, opponentColor);
+  const kingUnderThreat = opponentThreats.some(([r, c]) => r === kingPos.row && c === kingPos.col);
+
+  if (!kingUnderThreat) {
+    return false;
+  }
+
+  const allMoves = generateAllValidMovesForPlayer(playerColor, board);
+  for (const move of allMoves) {
+    const { from, to, piece } = move;
+    const simulatedBoard = simulateMove(board, [from.row, from.col], [to.row, to.col], piece);
+
+    const newKingPos = findKingPosition(playerColor, simulatedBoard);
+    if (!newKingPos) continue;
+
+    const newOpponentThreats = getSquaresThreatenedByColor(simulatedBoard, opponentColor);
+    const kingStillThreatened = newOpponentThreats.some(([r, c]) => r === newKingPos.row && c === newKingPos.col);
+
+    if (!kingStillThreatened) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Export isCheckmate so it can be imported in App.js
+export { isCheckmate };
 
 export default Chessboard;

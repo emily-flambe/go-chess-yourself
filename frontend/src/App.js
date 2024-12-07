@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Chessboard from "./components/Chessboard";
 import "./styles/App.css";
+import { isCheckmate } from "./components/Chessboard";
+
 
 const App = () => {
   const initialBoard = [
@@ -15,30 +17,38 @@ const App = () => {
   ];
 
   const [history, setHistory] = useState([initialBoard]); 
-  const [historyIndex, setHistoryIndex] = useState(0);
-  const [lastMove, setLastMove] = useState(null);
-  const [currentTurn, setCurrentTurn] = useState("White");
+  const [historyIndex, setHistoryIndex] = useState(0);   
+  const [lastMove, setLastMove] = useState(null);        
+  const [currentTurn, setCurrentTurn] = useState("White"); 
   const [branches, setBranches] = useState([]);
-  const [showThreats, setShowThreats] = useState(true);    // Player's threatened pieces (red)
-  const [showCaptures, setShowCaptures] = useState(true);  // Opponent's threatened pieces (blue)
+  const [showThreats, setShowThreats] = useState(true);   
+  const [showCaptures, setShowCaptures] = useState(true); 
+  const [winner, setWinner] = useState(null); // Track the winner
 
   const currentBoard = history[historyIndex];
 
   const handleMove = (newBoard, moveDetails) => {
     if (historyIndex < history.length - 1) {
-      // Branching from a past state: save entire current timeline
       setBranches([...branches, history]);
       const newHistory = history.slice(0, historyIndex + 1).concat([newBoard]);
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
     } else {
-      // Normal move
       setHistory([...history, newBoard]);
       setHistoryIndex(history.length);
     }
 
     setLastMove(moveDetails);
-    setCurrentTurn(currentTurn === "White" ? "Black" : "White");
+
+    const nextTurn = currentTurn === "White" ? "Black" : "White";
+    setCurrentTurn(nextTurn);
+
+    // After move, check if nextTurn player is checkmated
+    if (isCheckmate(nextTurn, newBoard)) {
+      // The currentTurn we just set is the losing player
+      const winnerColor = nextTurn === "White" ? "Black" : "White";
+      setWinner(winnerColor);
+    }
   };
 
   const handleBack = () => {
@@ -59,6 +69,7 @@ const App = () => {
     setLastMove(null);
     setCurrentTurn("White");
     setBranches([]);
+    setWinner(null);
   };
 
   const toggleShowThreats = () => {
@@ -72,19 +83,38 @@ const App = () => {
   return (
     <div className="app-container">
       <h1>Chess Game</h1>
-      <div 
-        className="turn-indicator"
-        style={{
-          backgroundColor: currentTurn === "White" ? "#fff" : "#000",
-          color: currentTurn === "White" ? "#000" : "#fff",
-          padding: "10px",
-          display: "inline-block",
-          marginBottom: "20px",
-          borderRadius: "5px"
-        }}
-      >
-        {currentTurn.toLowerCase()} to move
-      </div>
+      {winner ? (
+        <div
+          className="turn-indicator"
+          style={{
+            backgroundColor: winner === "White" ? "#fff" : "#000",
+            color: winner === "White" ? "#000" : "#fff",
+            padding: "20px",
+            display: "inline-block",
+            marginBottom: "20px",
+            borderRadius: "5px",
+            fontSize: "24px",
+            fontWeight: "bold"
+          }}
+        >
+          {winner.toLowerCase()} wins
+        </div>
+      ) : (
+        <div 
+          className="turn-indicator"
+          style={{
+            backgroundColor: currentTurn === "White" ? "#fff" : "#000",
+            color: currentTurn === "White" ? "#000" : "#fff",
+            padding: "10px",
+            display: "inline-block",
+            marginBottom: "20px",
+            borderRadius: "5px"
+          }}
+        >
+          {currentTurn.toLowerCase()} to move
+        </div>
+      )}
+
       <Chessboard
         chessboard={currentBoard}
         onChessboardUpdate={handleMove}
@@ -92,12 +122,13 @@ const App = () => {
         lastMove={lastMove}
         showThreats={showThreats}
         showCaptures={showCaptures}
+        winner={winner} // Pass winner to Chessboard
       />
       <div className="controls" style={{ marginTop: "20px" }}>
-        <button onClick={handleBack} disabled={historyIndex === 0}>
+        <button onClick={handleBack} disabled={historyIndex === 0 || winner}>
           Back
         </button>
-        <button onClick={handleForward} disabled={historyIndex === history.length - 1}>
+        <button onClick={handleForward} disabled={historyIndex === history.length - 1 || winner}>
           Forward
         </button>
         <button onClick={handleReset}>Reset</button>
