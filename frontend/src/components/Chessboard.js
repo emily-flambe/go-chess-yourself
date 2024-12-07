@@ -3,7 +3,7 @@ import Piece from "./Piece";
 import "../styles/Chessboard.css";
 import { kingMoves, rookMoves, bishopMoves, queenMoves, knightMoves, pawnMoves, getSquaresThreatenedByColor } from "./Movesets";
 
-const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) => {
+const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, showThreats, showCaptures }) => {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [validTargets, setValidTargets] = useState([]);
   const [targetSquare, setTargetSquare] = useState(null);
@@ -158,23 +158,19 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
     const isValidTarget = validTargets.some(([r, c]) => r === row && c === col);
     const isTargetSquare = targetSquare?.[0] === row && targetSquare?.[1] === col;
 
-    // Determine highlight color based on threat sets
-    const isThreatenedByOpponent = threatenedByOpponent.some(([r, c]) => r === row && c === col);
-    const isThreatenedByCurrent = threatenedByCurrentPlayer.some(([r, c]) => r === row && c === col);
-
     let highlightClass = "";
-    if (piece) {
+    if (piece) { // Removed the `if (showThreats && piece)` check since we have separate toggles
+      const isThreatenedByOpponent = threatenedByOpponent.some(([r, c]) => r === row && c === col);
+      const isThreatenedByCurrent = threatenedByCurrentPlayer.some(([r, c]) => r === row && c === col);
+  
+      // Now use showThreats for red highlight (my threatened pieces)
+      // and showCaptures for blue highlight (opponent pieces I threaten)
       if (currentTurn === "White") {
-        // White's threatened pieces: red highlight
-        if (isThreatenedByOpponent && piece.color === "White") highlightClass = "threat-red";
-        // Black's threatened pieces: blue highlight
-        if (isThreatenedByCurrent && piece.color === "Black") highlightClass = "threat-blue";
+        if (isThreatenedByOpponent && piece.color === "White" && showThreats) highlightClass = "threat-red";
+        if (isThreatenedByCurrent && piece.color === "Black" && showCaptures) highlightClass = "threat-blue";
       } else {
-        // currentTurn = Black
-        // Black's threatened pieces: red highlight
-        if (isThreatenedByOpponent && piece.color === "Black") highlightClass = "threat-red";
-        // White's threatened pieces: blue highlight
-        if (isThreatenedByCurrent && piece.color === "White") highlightClass = "threat-blue";
+        if (isThreatenedByOpponent && piece.color === "Black" && showThreats) highlightClass = "threat-red";
+        if (isThreatenedByCurrent && piece.color === "White" && showCaptures) highlightClass = "threat-blue";
       }
     }
 

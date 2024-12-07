@@ -15,19 +15,19 @@ const App = () => {
   ];
 
   const [history, setHistory] = useState([initialBoard]); 
-  const [historyIndex, setHistoryIndex] = useState(0);  
-  const [lastMove, setLastMove] = useState(null);        
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [lastMove, setLastMove] = useState(null);
   const [currentTurn, setCurrentTurn] = useState("White");
   const [branches, setBranches] = useState([]);
+  const [showThreats, setShowThreats] = useState(true);    // Player's threatened pieces (red)
+  const [showCaptures, setShowCaptures] = useState(true);  // Opponent's threatened pieces (blue)
 
   const currentBoard = history[historyIndex];
 
   const handleMove = (newBoard, moveDetails) => {
     if (historyIndex < history.length - 1) {
-      // Save entire current timeline
+      // Branching from a past state: save entire current timeline
       setBranches([...branches, history]);
-
-      // Truncate history and add new move
       const newHistory = history.slice(0, historyIndex + 1).concat([newBoard]);
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
@@ -61,17 +61,28 @@ const App = () => {
     setBranches([]);
   };
 
+  const toggleShowThreats = () => {
+    setShowThreats(!showThreats);
+  };
+
+  const toggleShowCaptures = () => {
+    setShowCaptures(!showCaptures);
+  };
+
   return (
     <div className="app-container">
       <h1>Chess Game</h1>
-      <div className="turn-indicator" style={{
-        backgroundColor: currentTurn === "White" ? "#fff" : "#000",
-        color: currentTurn === "White" ? "#000" : "#fff",
-        padding: "10px",
-        display: "inline-block",
-        marginBottom: "20px",
-        borderRadius: "5px"
-      }}>
+      <div 
+        className="turn-indicator"
+        style={{
+          backgroundColor: currentTurn === "White" ? "#fff" : "#000",
+          color: currentTurn === "White" ? "#000" : "#fff",
+          padding: "10px",
+          display: "inline-block",
+          marginBottom: "20px",
+          borderRadius: "5px"
+        }}
+      >
         {currentTurn.toLowerCase()} to move
       </div>
       <Chessboard
@@ -79,8 +90,10 @@ const App = () => {
         onChessboardUpdate={handleMove}
         currentTurn={currentTurn}
         lastMove={lastMove}
+        showThreats={showThreats}
+        showCaptures={showCaptures}
       />
-      <div className="controls">
+      <div className="controls" style={{ marginTop: "20px" }}>
         <button onClick={handleBack} disabled={historyIndex === 0}>
           Back
         </button>
@@ -88,6 +101,24 @@ const App = () => {
           Forward
         </button>
         <button onClick={handleReset}>Reset</button>
+      </div>
+      <div className="toggles" style={{ marginTop: "10px" }}>
+        <label style={{ marginRight: "10px" }}>
+          <input
+            type="checkbox"
+            checked={showThreats}
+            onChange={toggleShowThreats}
+          />
+          Show Threats
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showCaptures}
+            onChange={toggleShowCaptures}
+          />
+          Show Captures
+        </label>
       </div>
     </div>
   );
