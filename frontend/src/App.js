@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Chessboard from "./components/Chessboard";
 import "./styles/App.css";
 
-
 const App = () => {
   const initialBoard = [
     [{ type: "Rook", color: "Black" }, { type: "Knight", color: "Black" }, { type: "Bishop", color: "Black" }, { type: "Queen", color: "Black" }, { type: "King", color: "Black" }, { type: "Bishop", color: "Black" }, { type: "Knight", color: "Black" }, { type: "Rook", color: "Black" }],
@@ -16,22 +15,18 @@ const App = () => {
   ];
 
   const [history, setHistory] = useState([initialBoard]); // Immutable history of game states
-  const [historyIndex, setHistoryIndex] = useState(0); // Current position in history
-  const [lastMove, setLastMove] = useState(null); // Track the last move
+  const [historyIndex, setHistoryIndex] = useState(0);   // Current position in history
+  const [lastMove, setLastMove] = useState(null);        // Track the last move
   const [currentTurn, setCurrentTurn] = useState("White"); // Track whose turn it is
 
   const currentBoard = history[historyIndex]; // Current board state
 
   const handleMove = (newBoard, moveDetails) => {
-    // Append the new board state to the history
     setHistory([...history, newBoard]);
-    setHistoryIndex(history.length); // Move to the latest state
-    setLastMove(moveDetails); // Record the last move
-  
-    // Switch turns
+    setHistoryIndex(history.length); 
+    setLastMove(moveDetails);
     setCurrentTurn(currentTurn === "White" ? "Black" : "White");
   };
-  
 
   const handleBack = () => {
     if (historyIndex > 0) {
@@ -45,6 +40,13 @@ const App = () => {
     }
   };
 
+  const handleReset = () => {
+    setHistory([initialBoard]);
+    setHistoryIndex(0);
+    setLastMove(null);
+    setCurrentTurn("White");
+  };
+
   return (
     <div className="app-container">
       <h1>Chess Game</h1>
@@ -52,7 +54,7 @@ const App = () => {
         chessboard={currentBoard}
         onChessboardUpdate={handleMove}
         currentTurn={currentTurn}
-        lastMove={lastMove} // Pass lastMove to Chessboard
+        lastMove={lastMove}
       />
       <div className="controls">
         <button onClick={handleBack} disabled={historyIndex === 0}>
@@ -60,6 +62,9 @@ const App = () => {
         </button>
         <button onClick={handleForward} disabled={historyIndex === history.length - 1}>
           Forward
+        </button>
+        <button onClick={handleReset}>
+          Reset
         </button>
       </div>
     </div>
