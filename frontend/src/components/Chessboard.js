@@ -1,5 +1,3 @@
-// Chessboard.js
-
 import React, { useState } from "react";
 import Piece from "./Piece";
 import "../styles/Chessboard.css";
@@ -12,16 +10,16 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
 
   const opponentColor = currentTurn === "White" ? "Black" : "White";
 
-  // Squares with opponent pieces threatened by current player (highlight in blue)
+  // Get squares threatened by current player's pieces (opponent’s pieces at risk)
   const threatenedByCurrentPlayer = getSquaresThreatenedByColor(chessboard, currentTurn);
 
-  // Squares with current player's pieces threatened by opponent (highlight in red)
+  // Get squares where current player's pieces are threatened by opponent
   const threatenedByOpponent = getSquaresThreatenedByColor(chessboard, opponentColor);
 
   const handleSquareClick = (row, col) => {
     const clickedPiece = chessboard[row][col];
 
-    // Ensure only the current player's pieces can be selected
+    // Ensure only current player's pieces can be selected if no piece is currently selected
     if (!selectedSquare && clickedPiece && clickedPiece.color !== currentTurn) {
       return;
     }
@@ -34,7 +32,7 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
       return;
     }
 
-    // If a target square is selected and clicked again, confirm move
+    // If a target square is selected and clicked again, confirm the move
     if (targetSquare && row === targetSquare[0] && col === targetSquare[1]) {
       const [selectedRow, selectedCol] = selectedSquare;
       const selectedPiece = chessboard[selectedRow][selectedCol];
@@ -97,9 +95,60 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
           moves = [];
           break;
       }
+
+      // Filter moves that keep the King safe
+      moves = filterKingSafeMoves(chessboard, [row, col], clickedPiece, moves, currentTurn);
+
       setValidTargets(moves);
       setTargetSquare(null);
     }
+  };
+
+  // Filter out moves that would leave the king threatened
+  const filterKingSafeMoves = (board, fromPos, piece, moves, playerColor) => {
+    return moves.filter(([targetRow, targetCol]) => {
+      const simulatedBoard = simulateMove(board, fromPos, [targetRow, targetCol], piece);
+      const kingPos = findKingPosition(playerColor, simulatedBoard);
+      if (!kingPos) return false; // no king found, shouldn't happen but just in case
+
+      // If after the move, the king's square is threatened by opponent, discard this move
+      const opponentColor = playerColor === "White" ? "Black" : "White";
+      const squaresThreatenedByOpponent = getSquaresThreatenedByColor(simulatedBoard, opponentColor);
+
+      const kingUnderThreat = squaresThreatenedByOpponent.some(
+        ([r, c]) => r === kingPos.row && c === kingPos.col
+      );
+
+      return !kingUnderThreat;
+    });
+  };
+
+  const findKingPosition = (playerColor, board) => {
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = board[r][c];
+        if (piece && piece.type === "King" && piece.color === playerColor) {
+          return { row: r, col: c };
+        }
+      }
+    }
+    return null;
+  };
+
+  const simulateMove = (board, fromPos, toPos, piece) => {
+    const [fromRow, fromCol] = fromPos;
+    const [toRow, toCol] = toPos;
+
+    return board.map((r, rowIndex) =>
+      r.map((cell, colIndex) => {
+        if (rowIndex === toRow && colIndex === toCol) {
+          return piece;
+        } else if (rowIndex === fromRow && colIndex === fromCol) {
+          return null;
+        }
+        return cell;
+      })
+    );
   };
 
   const renderSquare = (row, col) => {
@@ -109,33 +158,22 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove }) =
     const isValidTarget = validTargets.some(([r, c]) => r === row && c === col);
     const isTargetSquare = targetSquare?.[0] === row && targetSquare?.[1] === col;
 
-    // Determine highlight color based on threat sets:
-    // - threatenedByOpponent: current player's pieces threatened by opponent => highlight red
-    // - threatenedByCurrentPlayer: opponent's pieces threatened by current player => highlight blue
+    // Determine highlight color based on threat sets
+    const isThreatenedByOpponent = threatenedByOpponent.some(([r, c]) => r === row && c === col);
+    const isThreatenedByCurrent = threatenedByCurrentPlayer.some(([r, c]) => r === row && c === col);
 
     let highlightClass = "";
     if (piece) {
-      const pos = [row, col];
-      const isThreatenedByOpponent = threatenedByOpponent.some(
-        ([r, c]) => r === row && c === col
-      );
-      const isThreatenedByCurrent = threatenedByCurrentPlayer.some(
-        ([r, c]) => r === row && c === col
-      );
-
-      // If it's White's turn:
-      // White threatened by black = red
-      // Black threatened by white = blue
-      // If it's Black's turn:
-      // Black threatened by white = red
-      // White threatened by black = blue
-
       if (currentTurn === "White") {
+        // White's threatened pieces: red highlight
         if (isThreatenedByOpponent && piece.color === "White") highlightClass = "threat-red";
+        // Black's threatened pieces: blue highlight
         if (isThreatenedByCurrent && piece.color === "Black") highlightClass = "threat-blue";
       } else {
-        // currentTurn === "Black"
+        // currentTurn = Black
+        // Black's threatened pieces: red highlight
         if (isThreatenedByOpponent && piece.color === "Black") highlightClass = "threat-red";
+        // White's threatened pieces: blue highlight
         if (isThreatenedByCurrent && piece.color === "White") highlightClass = "threat-blue";
       }
     }
