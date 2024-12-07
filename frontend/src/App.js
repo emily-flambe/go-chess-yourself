@@ -17,13 +17,27 @@ const App = () => {
   const [history, setHistory] = useState([initialBoard]); // Immutable history of game states
   const [historyIndex, setHistoryIndex] = useState(0);   // Current position in history
   const [lastMove, setLastMove] = useState(null);        // Track the last move
-  const [currentTurn, setCurrentTurn] = useState("White"); // Track whose turn it is
+  const [currentTurn, setCurrentTurn] = useState("White");// Track whose turn it is
+  const [branches, setBranches] = useState([]);          // Store entire timelines (not just future states)
 
   const currentBoard = history[historyIndex]; // Current board state
 
   const handleMove = (newBoard, moveDetails) => {
-    setHistory([...history, newBoard]);
-    setHistoryIndex(history.length); 
+    // If we are not at the end of the current history, the user is branching from a past state
+    if (historyIndex < history.length - 1) {
+      // Save the entire current timeline into branches before altering it
+      setBranches([...branches, history]);
+
+      // Truncate history to current position and then append the new move
+      const newHistory = history.slice(0, historyIndex + 1).concat([newBoard]);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    } else {
+      // Normal move at the end of history
+      setHistory([...history, newBoard]);
+      setHistoryIndex(history.length);
+    }
+
     setLastMove(moveDetails);
     setCurrentTurn(currentTurn === "White" ? "Black" : "White");
   };
@@ -45,6 +59,7 @@ const App = () => {
     setHistoryIndex(0);
     setLastMove(null);
     setCurrentTurn("White");
+    setBranches([]);
   };
 
   return (
@@ -63,9 +78,7 @@ const App = () => {
         <button onClick={handleForward} disabled={historyIndex === history.length - 1}>
           Forward
         </button>
-        <button onClick={handleReset}>
-          Reset
-        </button>
+        <button onClick={handleReset}>Reset</button>
       </div>
     </div>
   );
