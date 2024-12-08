@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Chessboard from "./components/Chessboard";
 import "./styles/App.css";
 import { isCheckmate } from "./components/Chessboard";
+import { getMoveNotation } from './components/Notation';
+
 
 function findKingPosition(playerColor, board) {
   for (let r = 0; r < 8; r++) {
@@ -63,6 +65,11 @@ const App = () => {
       const kingPos = findKingPosition(losingColor, newBoard);
       setLosingKingPos(kingPos);
     }
+
+    const notation = getMoveNotation(moveDetails);
+
+    console.log('Move notation:', notation);
+    
   };
 
   const handleBack = () => {

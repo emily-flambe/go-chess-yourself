@@ -45,11 +45,15 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
         })
       );
 
-      onChessboardUpdate(updatedChessboard, {
+      const targetPiece = chessboard[row][col]; // piece on the target square before the move
+      const moveDetails = {
         from: [selectedRow, selectedCol],
         to: [row, col],
         piece: selectedPiece,
-      });
+        capturedPiece: targetPiece && targetPiece.color !== selectedPiece.color ? targetPiece : null
+      };
+
+      onChessboardUpdate(updatedChessboard, moveDetails);
 
       setSelectedSquare(null);
       setValidTargets([]);
