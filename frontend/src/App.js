@@ -3,18 +3,7 @@ import Chessboard from "./components/Chessboard";
 import "./styles/App.css";
 import { isCheckmate } from "./components/Chessboard";
 import { getMoveNotation } from "./components/Notation";
-
-function findKingPosition(playerColor, board) {
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const piece = board[r][c];
-      if (piece && piece.type === "King" && piece.color === playerColor) {
-        return { row: r, col: c };
-      }
-    }
-  }
-  return null;
-}
+import { findKingPosition } from "./components/Movesets";
 
 const App = () => {
   const initialBoard = [
@@ -87,23 +76,23 @@ const App = () => {
       setHistory([...history, newBoard]);
       setHistoryIndex(history.length);
     }
-
+  
     setLastMove(moveDetails);
-
+  
     const nextTurn = currentTurn === "White" ? "Black" : "White";
     setCurrentTurn(nextTurn);
-
+  
     if (isCheckmate(nextTurn, newBoard)) {
       const winnerColor = nextTurn === "White" ? "Black" : "White";
       setWinner(winnerColor);
-      const losingColor = nextTurn; // The checkmated player's color
-      const kingPos = findKingPosition(losingColor, newBoard);
+      const kingPos = findKingPosition(nextTurn, newBoard);
       setLosingKingPos(kingPos);
     }
-
-    const notation = getMoveNotation(moveDetails);
+  
+    const notation = getMoveNotation(moveDetails, newBoard, currentTurn);
     setMoves([...moves, notation]);
   };
+  
 
   const handleBack = () => {
     if (historyIndex > 0) {

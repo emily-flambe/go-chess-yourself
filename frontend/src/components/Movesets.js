@@ -200,3 +200,15 @@ export const kingMoves = (row, col, board) => {
   const filterMoves = (moves, board) =>
     moves.filter(([r, c]) => r >= 0 && r < 8 && c >= 0 && c < 8);
   
+  export function findKingPosition(playerColor, board) {
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = board[r][c];
+        if (piece && piece.type === "King" && piece.color === playerColor) {
+          return { row: r, col: c };
+        }
+      }
+    }
+    return null;
+  }
+  
