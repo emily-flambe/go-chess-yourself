@@ -3,6 +3,17 @@ import Chessboard from "./components/Chessboard";
 import "./styles/App.css";
 import { isCheckmate } from "./components/Chessboard";
 
+function findKingPosition(playerColor, board) {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (piece && piece.type === "King" && piece.color === playerColor) {
+        return { row: r, col: c };
+      }
+    }
+  }
+  return null;
+}
 
 const App = () => {
   const initialBoard = [
@@ -23,7 +34,8 @@ const App = () => {
   const [branches, setBranches] = useState([]);
   const [showThreats, setShowThreats] = useState(true);   
   const [showCaptures, setShowCaptures] = useState(true); 
-  const [winner, setWinner] = useState(null); // Track the winner
+  const [winner, setWinner] = useState(null); 
+  const [losingKingPos, setLosingKingPos] = useState(null); // Position of losing king
 
   const currentBoard = history[historyIndex];
 
@@ -43,22 +55,27 @@ const App = () => {
     const nextTurn = currentTurn === "White" ? "Black" : "White";
     setCurrentTurn(nextTurn);
 
-    // After move, check if nextTurn player is checkmated
     if (isCheckmate(nextTurn, newBoard)) {
-      // The currentTurn we just set is the losing player
       const winnerColor = nextTurn === "White" ? "Black" : "White";
       setWinner(winnerColor);
+      // Find losing king's position
+      const losingColor = nextTurn; // nextTurn player is the one checkmated
+      const kingPos = findKingPosition(losingColor, newBoard);
+      setLosingKingPos(kingPos);
     }
   };
 
   const handleBack = () => {
+    // Keep Back available even if winner is set
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
     }
   };
 
   const handleForward = () => {
-    if (historyIndex < history.length - 1) {
+    // Keep Forward disabled if winner since no new states, 
+    // but user only requested Back to remain available
+    if (!winner && historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
     }
   };
@@ -70,6 +87,7 @@ const App = () => {
     setCurrentTurn("White");
     setBranches([]);
     setWinner(null);
+    setLosingKingPos(null);
   };
 
   const toggleShowThreats = () => {
@@ -122,10 +140,13 @@ const App = () => {
         lastMove={lastMove}
         showThreats={showThreats}
         showCaptures={showCaptures}
-        winner={winner} // Pass winner to Chessboard
+        winner={winner}
+        losingKingPos={losingKingPos}
       />
+
       <div className="controls" style={{ marginTop: "20px" }}>
-        <button onClick={handleBack} disabled={historyIndex === 0 || winner}>
+        {/* Keep Back available even if winner */}
+        <button onClick={handleBack} disabled={historyIndex === 0}>
           Back
         </button>
         <button onClick={handleForward} disabled={historyIndex === history.length - 1 || winner}>
@@ -133,12 +154,14 @@ const App = () => {
         </button>
         <button onClick={handleReset}>Reset</button>
       </div>
+
       <div className="toggles" style={{ marginTop: "10px" }}>
         <label style={{ marginRight: "10px" }}>
           <input
             type="checkbox"
             checked={showThreats}
             onChange={toggleShowThreats}
+            disabled={!!winner} // Once winner declared, no highlight anyway
           />
           Show Threats
         </label>
@@ -147,6 +170,7 @@ const App = () => {
             type="checkbox"
             checked={showCaptures}
             onChange={toggleShowCaptures}
+            disabled={!!winner} // Once winner declared, no highlight anyway
           />
           Show Captures
         </label>

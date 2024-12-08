@@ -3,18 +3,20 @@ import Piece from "./Piece";
 import "../styles/Chessboard.css";
 import { kingMoves, rookMoves, bishopMoves, queenMoves, knightMoves, pawnMoves, getSquaresThreatenedByColor, calculateValidTargetsForPiece } from "./Movesets";
 
-const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, showThreats, showCaptures, winner }) => {
+const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, showThreats, showCaptures, winner, losingKingPos }) => {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [validTargets, setValidTargets] = useState([]);
   const [targetSquare, setTargetSquare] = useState(null);
 
   const opponentColor = currentTurn === "White" ? "Black" : "White";
 
-  const threatenedByCurrentPlayer = getSquaresThreatenedByColor(chessboard, currentTurn);
-  const threatenedByOpponent = getSquaresThreatenedByColor(chessboard, opponentColor);
+  // If there's a winner, skip highlight logic. Otherwise, calculate threatened squares.
+  const threatenedByCurrentPlayer = !winner ? getSquaresThreatenedByColor(chessboard, currentTurn) : [];
+  const threatenedByOpponent = !winner ? getSquaresThreatenedByColor(chessboard, opponentColor) : [];
 
   const handleSquareClick = (row, col) => {
     if (winner) return; // If there's a winner, no moves allowed
+
     const clickedPiece = chessboard[row][col];
 
     if (!selectedSquare && clickedPiece && clickedPiece.color !== currentTurn) {
@@ -121,7 +123,8 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
     const isTargetSquare = targetSquare?.[0] === row && targetSquare?.[1] === col;
 
     let highlightClass = "";
-    if (piece) {
+    // Only apply highlighting if no winner
+    if (!winner && piece) {
       const isThreatenedByOpponent = threatenedByOpponent.some(([r, c]) => r === row && c === col);
       const isThreatenedByCurrent = threatenedByCurrentPlayer.some(([r, c]) => r === row && c === col);
 
@@ -134,14 +137,37 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
       }
     }
 
+    const isLosingKingSquare = winner && losingKingPos && losingKingPos.row === row && losingKingPos.col === col;
+
     return (
       <div
         key={`${row}-${col}`}
         className={`square ${isDark ? "dark" : "light"} ${isSelected ? "selected" : ""} ${isTargetSquare ? "target" : ""} ${highlightClass}`}
         onClick={() => handleSquareClick(row, col)}
+        style={{ position: "relative" }}
       >
         {piece && <Piece type={piece.type} color={piece.color} />}
         {isValidTarget && <div className="dot"></div>}
+        {isLosingKingSquare && (
+          <div 
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "48px",
+              fontWeight: "bold",
+              color: "red",
+              pointerEvents: "none",
+            }}
+          >
+            X
+          </div>
+        )}
       </div>
     );
   };
@@ -241,7 +267,6 @@ function isCheckmate(playerColor, board) {
   return true;
 }
 
-// Export isCheckmate so it can be imported in App.js
 export { isCheckmate };
 
 export default Chessboard;
