@@ -145,37 +145,41 @@ const App = () => {
 
   return (
     <div className="app-wrapper">
-      <h1>Chess Game</h1>
-      {winner ? (
-        <div
-          className="turn-indicator winner"
-          style={{
-            backgroundColor: winner === "White" ? "#fff" : "#000",
-            color: winner === "White" ? "#000" : "#fff",
-          }}
-        >
-          {winner.toLowerCase()} wins
-        </div>
-      ) : (
-        <div
-          className="turn-indicator"
-          style={{
-            backgroundColor: currentTurn === "White" ? "#fff" : "#000",
-            color: currentTurn === "White" ? "#000" : "#fff",
-          }}
-        >
-          {currentTurn.toLowerCase()} to move
-        </div>
-      )}
-
       <div className="app-container">
+        {/* Moves list */}
         <div className="moves-container">
           {formattedMoves.map((line, index) => (
-            <div key={index}>{line}</div>
+            <div key={index}>
+              {index + 1}. {line}
+            </div>
           ))}
         </div>
 
+        {/* Main content */}
         <div className="main-container">
+          <h1>Chess Game</h1>
+          {winner ? (
+            <div
+              className="turn-indicator winner"
+              style={{
+                backgroundColor: winner === "White" ? "#fff" : "#000",
+                color: winner === "White" ? "#000" : "#fff",
+              }}
+            >
+              {winner.toLowerCase()} wins
+            </div>
+          ) : (
+            <div
+              className="turn-indicator"
+              style={{
+                backgroundColor: currentTurn === "White" ? "#fff" : "#000",
+                color: currentTurn === "White" ? "#000" : "#fff",
+              }}
+            >
+              {currentTurn.toLowerCase()} to move
+            </div>
+          )}
+
           <Chessboard
             chessboard={currentBoard}
             onChessboardUpdate={handleMove}

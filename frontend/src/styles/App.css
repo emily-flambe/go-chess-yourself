@@ -31,6 +31,8 @@ h1 {
   border-radius: 5px;
   font-size: 16px;
   text-align: center;
+  background-color: white;
+  color: black;
 }
 
 .turn-indicator.winner {
@@ -42,7 +44,7 @@ h1 {
 .app-container {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center; /* Align the moves list and chessboard vertically */
   gap: 20px;
 }
 
@@ -51,13 +53,11 @@ h1 {
   width: 150px;
   overflow-y: auto;
   border: 1px solid #ccc;
-  padding: 5px;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  max-height: 100%;
+  max-height: 100%; /* Match the height of the chessboard */
 }
 
 /* Chessboard container */
