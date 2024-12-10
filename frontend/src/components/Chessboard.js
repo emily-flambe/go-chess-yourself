@@ -73,19 +73,19 @@ const Chessboard = ({ chessboard, onChessboardUpdate, currentTurn, lastMove, sho
       let moves = [];
       switch (clickedPiece.type) {
         case "King":
-          moves = kingMoves(row, col, chessboard);
+          moves = kingMoves(row, col, chessboard, clickedPiece.color);
           break;
         case "Rook":
-          moves = rookMoves(row, col, chessboard);
+          moves = rookMoves(row, col, chessboard, clickedPiece.color);
           break;
         case "Bishop":
-          moves = bishopMoves(row, col, chessboard);
+          moves = bishopMoves(row, col, chessboard, clickedPiece.color);
           break;
         case "Queen":
-          moves = queenMoves(row, col, chessboard);
+          moves = queenMoves(row, col, chessboard, clickedPiece.color);
           break;
         case "Knight":
-          moves = knightMoves(row, col, chessboard);
+          moves = knightMoves(row, col, chessboard, clickedPiece.color);
           break;
         case "Pawn":
           moves = pawnMoves(row, col, chessboard, clickedPiece.color, lastMove);

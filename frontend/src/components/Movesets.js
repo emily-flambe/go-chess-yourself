@@ -1,47 +1,51 @@
 // Movesets.js
 
-export const kingMoves = (row, col, board) => {
+export const kingMoves = (row, col, board, color) => {
     const directions = [
       [-1, -1], [-1, 0], [-1, 1],
       [0, -1],           [0, 1],
       [1, -1], [1, 0], [1, 1],
     ];
-    return calculateMoves(row, col, directions, board, 1);
+    const moves = calculateMoves(row, col, directions, board, 1);
+    return filterMoves(moves, board, color);
   };
   
-  export const rookMoves = (row, col, board) => {
+  export const rookMoves = (row, col, board, color) => {
     const directions = [
       [-1, 0], [1, 0],
       [0, -1], [0, 1],
     ];
-    return calculateMoves(row, col, directions, board);
+    const moves = calculateMoves(row, col, directions, board);
+    return filterMoves(moves, board, color);
   };
   
-  export const bishopMoves = (row, col, board) => {
+  export const bishopMoves = (row, col, board, color) => {
     const directions = [
       [-1, -1], [-1, 1],
       [1, -1], [1, 1],
     ];
-    return calculateMoves(row, col, directions, board);
+    const moves = calculateMoves(row, col, directions, board);
+    return filterMoves(moves, board, color);
   };
   
-  export const queenMoves = (row, col, board) => {
+  export const queenMoves = (row, col, board, color) => {
     const directions = [
       [-1, -1], [-1, 0], [-1, 1],
       [0, -1],            [0, 1],
       [1, -1], [1, 0], [1, 1],
     ];
-    return calculateMoves(row, col, directions, board);
+    const moves = calculateMoves(row, col, directions, board);
+    return filterMoves(moves, board, color);
   };
   
-  export const knightMoves = (row, col, board) => {
+  export const knightMoves = (row, col, board, color) => {
     const moves = [
       [row + 2, col + 1], [row + 2, col - 1],
       [row - 2, col + 1], [row - 2, col - 1],
       [row + 1, col + 2], [row + 1, col - 2],
       [row - 1, col + 2], [row - 1, col - 2],
     ];
-    return filterMoves(moves, board);
+    return filterMoves(moves, board, color);
   };
   
   export const pawnMoves = (row, col, board, color, lastMove) => {
@@ -129,7 +133,7 @@ export const kingMoves = (row, col, board) => {
       }
     }
   
-    return filterMoves(moves, board);
+    return filterMoves(moves, board, color);
   };
   
   
@@ -197,8 +201,16 @@ export const kingMoves = (row, col, board) => {
     return moves;
   };
   
-  const filterMoves = (moves, board) =>
-    moves.filter(([r, c]) => r >= 0 && r < 8 && c >= 0 && c < 8);
+  const filterMoves = (moves, board, pieceColor) =>
+    moves.filter(([r, c]) => {
+      // Ensure move is within bounds
+      if (r < 0 || r >= 8 || c < 0 || c >= 8) return false;
+  
+      const target = board[r][c];
+  
+      // Allow empty squares or captures of opposite color
+      return !target || target.color !== pieceColor;
+    });
   
   export function findKingPosition(playerColor, board) {
     for (let r = 0; r < 8; r++) {
