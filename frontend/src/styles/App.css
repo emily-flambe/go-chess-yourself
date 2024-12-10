@@ -8,55 +8,70 @@ body {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* General app layout */
+.app-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
 }
 
-.App-link {
-  color: #61dafb;
+h1 {
+  margin-bottom: 10px;
+  text-align: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.turn-indicator {
+  padding: 10px;
+  display: inline-block;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  text-align: center;
+  background-color: white;
+  color: black;
 }
 
+.turn-indicator.winner {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* App container with chessboard and moves list */
 .app-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-  padding: 20px;
+  flex-direction: row;
+  align-items: center; /* Align the moves list and chessboard vertically */
+  gap: 20px;
 }
 
+/* Moves list container */
+.moves-container {
+  width: 150px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  max-height: 100%; /* Match the height of the chessboard */
+}
+
+/* Chessboard container */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
 .chessboard-container {
   margin-top: 20px;
 }
 
-
+/* Controls for Back, Forward, Reset buttons */
 .controls {
   margin-top: 20px;
   display: flex;
@@ -75,4 +90,12 @@ button {
 button:disabled {
   background-color: lightgray;
   cursor: not-allowed;
+}
+
+/* Toggles for Show Threats and Show Captures */
+.toggles {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
