@@ -4,6 +4,8 @@ import "./styles/App.css";
 import { isCheckmate } from "./components/Chessboard";
 import { getMoveNotation } from "./components/Notation";
 import { findKingPosition } from "./components/Movesets";
+import { boardToFEN } from './components/FEN';
+
 
 const App = () => {
   const initialBoard = [
@@ -91,6 +93,21 @@ const App = () => {
   
     const notation = getMoveNotation(moveDetails, newBoard, currentTurn);
     setMoves([...moves, notation]);
+
+    // FEN Notation
+    // Example FEN generation
+    const castlingRights = {
+      whiteKingside: true,
+      whiteQueenside: true,
+      blackKingside: true,
+      blackQueenside: true,
+    }; // Replace with actual castling rights tracking logic
+    const enPassantTarget = null; // Replace with actual en passant square if available
+    const halfmoveClock = 0; // Update with actual halfmove clock
+    const fullmoveNumber = Math.ceil(moves.length / 2) + 1; // Example fullmove number
+
+    const fen = boardToFEN(newBoard, nextTurn, castlingRights, enPassantTarget, halfmoveClock, fullmoveNumber);
+    console.log("FEN:", fen);
   };
   
 
